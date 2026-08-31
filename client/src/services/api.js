@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// API URL from environment variable or production Railway backend URL
-const API_URL = import.meta.env.VITE_API_URL || 'https://joyful-fascination-production-4768.up.railway.app';
+// API URL - direct connection to Railway backend
+const API_URL = 'https://joyful-fascination-production-4768.up.railway.app';
 const API_BASE = `${API_URL.replace(/\/+$/, '')}/api`;
 
 const apiClient = axios.create({
