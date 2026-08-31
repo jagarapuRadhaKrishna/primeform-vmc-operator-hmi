@@ -18,7 +18,7 @@ export function Stage1MachineChecks({ checks, onConfirmCheck, onNextStage, loadi
 
   useEffect(() => {
     const nextUnconfirmed = checks.findIndex(c => c.confirmed === 0);
-    if (nextUnconfirmed !== -1 && checks[activeIndex]?.confirmed === 1) {
+    if (nextUnconfirmed !== -1) {
       setActiveIndex(nextUnconfirmed);
     }
   }, [checks]);

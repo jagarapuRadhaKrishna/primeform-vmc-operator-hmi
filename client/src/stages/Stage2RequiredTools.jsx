@@ -9,7 +9,7 @@ export function Stage2RequiredTools({ tools, onConfirmTool, onNextStage, loading
 
   useEffect(() => {
     const nextUnconfirmed = tools.findIndex(t => t.confirmed === 0);
-    if (nextUnconfirmed !== -1 && tools[activeIndex]?.confirmed === 1) {
+    if (nextUnconfirmed !== -1) {
       setActiveIndex(nextUnconfirmed);
     }
   }, [tools]);

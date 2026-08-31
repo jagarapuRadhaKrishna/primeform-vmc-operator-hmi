@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-// API URL from environment variable for deployment
-const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
+// API URL from environment variable or production Railway backend URL
+const API_URL = import.meta.env.VITE_API_URL || 'https://joyful-fascination-production-4768.up.railway.app';
+const API_BASE = `${API_URL.replace(/\/+$/, '')}/api`;
 
 const apiClient = axios.create({
   baseURL: API_BASE,
-  timeout: 8000,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -18,7 +19,7 @@ export const api = {
     return res.data;
   },
 
-  // Get machine configuration (includes checks, tools, workpiece)
+  // Get machine configuration (includes checks, tools, workpiece, progress)
   async getMachine() {
     const res = await apiClient.get('/machine');
     return res.data;

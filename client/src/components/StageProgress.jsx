@@ -9,7 +9,7 @@ const STAGES = [
   { id: 'OPERATION', step: '05', title: 'OPERATION', shortTitle: 'OPERATION', icon: PlayCircle },
 ];
 
-export function StageProgress({ currentStage, progress }) {
+export function StageProgress({ currentStage, progress, onSelectStage }) {
   const getStageStatus = (stageId) => {
     if (stageId === currentStage) return 'ACTIVE';
     if (stageId === 'MACHINE_CHECKS' && progress?.checks?.complete) return 'COMPLETED';
@@ -20,6 +20,21 @@ export function StageProgress({ currentStage, progress }) {
     return 'LOCKED';
   };
 
+  const isStageClickable = (stageId) => {
+    if (stageId === currentStage) return false;
+    // Stage 1 is always accessible
+    if (stageId === 'MACHINE_CHECKS') return true;
+    // Stage 2 is accessible if checks complete
+    if (stageId === 'TOOLS' && (progress?.checks?.complete || currentStage !== 'MACHINE_CHECKS')) return true;
+    // Stage 3 is accessible if checks and tools complete
+    if (stageId === 'WORKPIECE' && (progress?.tools?.complete || currentStage === 'READY' || currentStage === 'OPERATION')) return true;
+    // Stage 4 is accessible if all setup is complete
+    if (stageId === 'READY' && progress?.isReady) return true;
+    // Stage 5 is accessible if ready
+    if (stageId === 'OPERATION' && progress?.isReady) return true;
+    return false;
+  };
+
   return (
     <nav aria-label="Progress" className="hmi-workflow">
       <div className="hmi-container">
@@ -28,16 +43,23 @@ export function StageProgress({ currentStage, progress }) {
             const status = getStageStatus(s.id);
             const isActive = s.id === currentStage;
             const isCompleted = status === 'COMPLETED';
+            const clickable = isStageClickable(s.id);
 
             return (
-              <div
+              <button
                 key={s.id}
+                type="button"
+                onClick={() => clickable && onSelectStage && onSelectStage(s.id)}
+                disabled={!clickable && !isActive}
+                title={clickable ? `Go to ${s.title}` : isActive ? `Current: ${s.title}` : `Complete previous steps to unlock`}
                 className={`hmi-workflow__step flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg border text-left transition-all duration-150 relative min-w-0 ${
                   isActive
-                    ? 'bg-[#15233c] border-cyan-500 text-white shadow-[0_0_12px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400'
-                    : isCompleted
-                      ? 'bg-[#0f1d2b] border-emerald-600/50 text-emerald-300'
-                      : 'bg-[#090f1c] border-[#162035] text-slate-600 opacity-60'
+                    ? 'bg-[#15233c] border-cyan-500 text-white shadow-[0_0_12px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400 cursor-default'
+                    : clickable
+                      ? 'bg-[#0f1d2b] border-emerald-600/50 text-emerald-300 hover:bg-[#15273b] hover:border-cyan-400/70 hover:shadow-[0_0_8px_rgba(56,189,248,0.2)] cursor-pointer'
+                      : isCompleted
+                        ? 'bg-[#0f1d2b] border-emerald-600/50 text-emerald-300 cursor-pointer'
+                        : 'bg-[#090f1c] border-[#162035] text-slate-600 opacity-60 cursor-not-allowed'
                 }`}
               >
                 {/* Step badge / checkmark */}
@@ -67,7 +89,7 @@ export function StageProgress({ currentStage, progress }) {
                     <span className="inline sm:hidden">{s.shortTitle}</span>
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

@@ -25,10 +25,20 @@ export function App() {
   };
 
   const applyFullState = (data) => {
-    if (data.machineState) setMachineState(data.machineState);
-    if (data.checks) setChecks(data.checks);
-    if (data.tools) setTools(data.tools);
-    if (data.workpiece) setWorkpiece(data.workpiece);
+    if (!data) return;
+    if (data.machineState) {
+      setMachineState(prev => ({
+        ...prev,
+        ...data.machineState,
+        // If operator is viewing a stage, keep it unless new stage advanced
+        current_stage: prev?.current_stage && prev.current_stage !== data.machineState.current_stage && prev.manualView
+          ? prev.current_stage
+          : data.machineState.current_stage
+      }));
+    }
+    if (Array.isArray(data.checks) && data.checks.length > 0) setChecks(data.checks);
+    if (Array.isArray(data.tools) && data.tools.length > 0) setTools(data.tools);
+    if (Array.isArray(data.workpiece) && data.workpiece.length > 0) setWorkpiece(data.workpiece);
     if (data.progress) setProgress(data.progress);
   };
 
@@ -36,9 +46,8 @@ export function App() {
     try {
       if (isInitial) setLoading(true);
       const machineRes = await api.getMachine();
-      const workflowRes = await api.getWorkflow();
       
-      if (machineRes.success && machineRes.data) {
+      if (machineRes?.success && machineRes?.data) {
         applyFullState(machineRes.data);
       }
       setIsConnected(true);
@@ -46,7 +55,7 @@ export function App() {
       console.error('Failed to load state from API:', err);
       setIsConnected(false);
       if (isInitial) {
-        showToast('Cannot connect to backend HMI service. Running in offline mode.', 'error');
+        showToast('Connecting to backend HMI service...', 'info');
       }
     } finally {
       if (isInitial) setLoading(false);
@@ -65,7 +74,7 @@ export function App() {
     try {
       setLoading(true);
       const res = await api.confirmMachineCheck(id);
-      if (res.success && res.data?.fullState) {
+      if (res?.success && res?.data?.fullState) {
         applyFullState(res.data.fullState);
       } else {
         await loadState();
@@ -81,7 +90,7 @@ export function App() {
     try {
       setLoading(true);
       const res = await api.confirmTool(id);
-      if (res.success && res.data?.fullState) {
+      if (res?.success && res?.data?.fullState) {
         applyFullState(res.data.fullState);
       } else {
         await loadState();
@@ -97,7 +106,7 @@ export function App() {
     try {
       setLoading(true);
       const res = await api.confirmWorkpiece(id);
-      if (res.success && res.data?.fullState) {
+      if (res?.success && res?.data?.fullState) {
         applyFullState(res.data.fullState);
       } else {
         await loadState();
@@ -113,7 +122,8 @@ export function App() {
     try {
       setLoading(true);
       const res = await api.advanceStage();
-      if (res.success && res.data?.fullState) {
+      if (res?.success && res?.data?.fullState) {
+        setMachineState(prev => ({ ...prev, manualView: false }));
         applyFullState(res.data.fullState);
       } else {
         await loadState();
@@ -125,11 +135,20 @@ export function App() {
     }
   };
 
+  const handleSelectStage = (stageId) => {
+    // Switch view immediately to clicked previous or unlocked stage
+    setMachineState(prev => ({
+      ...prev,
+      current_stage: stageId,
+      manualView: true
+    }));
+  };
+
   const handleStartOperation = async () => {
     try {
       setLoading(true);
       const res = await api.startOperation();
-      if (res.success && res.data?.fullState) {
+      if (res?.success && res?.data?.fullState) {
         applyFullState(res.data.fullState);
       } else {
         await loadState();
@@ -145,7 +164,7 @@ export function App() {
     try {
       setLoading(true);
       const res = await api.stopOperation();
-      if (res.success && res.data?.fullState) {
+      if (res?.success && res?.data?.fullState) {
         applyFullState(res.data.fullState);
       } else {
         await loadState();
@@ -161,7 +180,8 @@ export function App() {
     try {
       setLoading(true);
       const res = await api.resetSystem();
-      if (res.success && res.data?.fullState) {
+      if (res?.success && res?.data?.fullState) {
+        setMachineState(prev => ({ ...prev, manualView: false }));
         applyFullState(res.data.fullState);
         showToast('System reset to initial POWER ON state', 'info');
       } else {
@@ -187,19 +207,20 @@ export function App() {
 
       {/* Offline Alert Banner */}
       {!isConnected && (
-        <div className="bg-red-950 border-b border-red-700 text-red-200 px-3 py-1.5 text-xs font-mono flex items-center justify-center gap-2 shrink-0">
-          <WifiOff className="w-4 h-4 text-red-400 shrink-0" />
-          <span>● CONNECTION LOST: Backend HMI server unreachable at http://localhost:5000</span>
+        <div className="bg-amber-950/80 border-b border-amber-700 text-amber-200 px-3 py-1 text-xs font-mono flex items-center justify-center gap-2 shrink-0">
+          <WifiOff className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <span>● Connecting to Railway backend at https://joyful-fascination-production-4768.up.railway.app</span>
         </div>
       )}
 
-      {/* 2. Stage Progress Stepper */}
+      {/* 2. Stage Progress Stepper with Clickable Previous Tabs */}
       <StageProgress 
         currentStage={currentStage} 
         progress={progress} 
+        onSelectStage={handleSelectStage}
       />
 
-      {/* 3. Centered Main Stage Content - Fits Viewport Seamlessly */}
+      {/* 3. Centered Main Stage Content with Full Scroll Support */}
       <main className="hmi-main">
         {currentStage === 'MACHINE_CHECKS' && (
           <Stage1MachineChecks 
