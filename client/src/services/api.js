@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use environment variable if set, otherwise use relative path which is proxied by Vite
-const API_BASE = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:5001/api';
+// API URL from environment variable for deployment
+const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 const apiClient = axios.create({
   baseURL: API_BASE,
