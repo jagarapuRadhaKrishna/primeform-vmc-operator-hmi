@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  --bg-app:#080c14; --bg-header:#0b111e; --bg-stepper:#0c1322; --bg-card:#0f1728; --border-dim:#1e2d4a; --border-card:#223554; --text-primary:#f8fafc;
+  --color-green:#10b981; --color-green-dark:#047857; --color-amber:#f59e0b; --color-red:#ef4444; --color-cyan-light:#38bdf8;
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif; --font-mono:'JetBrains Mono',monospace; --font-display:'Orbitron',var(--font-sans); --radius-md:10px; --radius-lg:14px;
+}
+
+*,*::before,*::after { box-sizing:border-box; }
+html,body,#root { min-height:100%; margin:0; }
+html,body { min-height:100dvh; background:var(--bg-app); color:var(--text-primary); font:14px/1.5 var(--font-sans); overflow-x:hidden; }
+.font-mono { font-family:var(--font-mono); }
+.font-display { font-family:var(--font-display); }
+
+/* Root shell */
+.hmi-shell { width:100%; height:100dvh; min-height:100dvh; display:flex; flex-direction:column; overflow:hidden; background-color:var(--bg-app); background-image:linear-gradient(to right,rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.015) 1px,transparent 1px); background-size:32px 32px; }
+.hmi-main { flex:1 1 0; min-height:0; width:100%; display:flex; align-items:flex-start; justify-content:center; overflow-y:auto; overflow-x:hidden; }
+
+/* Header and workflow */
+.hmi-header { width:100%; height:64px; min-height:64px; padding:8px 32px; background:var(--bg-header); border-bottom:1px solid var(--border-dim); z-index:10; }
+.hmi-header__inner { width:min(1440px,100%); height:100%; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.hmi-header__machine,.hmi-header__actions { display:flex; flex-flow:row nowrap; align-items:center; gap:10px; min-width:0; }
+.hmi-header__machine { flex:1 1 auto; }
+.hmi-header__actions { flex:0 0 auto; }
+.hmi-header__machine > div { flex:0 0 auto; width:auto; }
+.hmi-container { width:min(1100px,calc(100% - 64px)); margin-inline:auto; }
+.hmi-workflow { width:100%; min-height:68px; padding:10px 32px; background:var(--bg-stepper); border-bottom:1px solid var(--border-dim); }
+.hmi-workflow__steps { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); align-items:stretch; gap:10px; }
+.hmi-workflow__step { width:100%; min-width:0; min-height:48px; display:flex; flex-direction:row; align-items:center; }
+
+/* Shared stage and card system */
+.stage-screen { width:min(1600px,calc(100% - 64px)); min-width:0; margin:auto; padding:32px 0 48px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; }
+.stage-heading,.stage-card-wrap,.stage-action-wrap { width:min(1200px,100%); min-width:0; }
+.stage-heading { margin:0 0 24px; text-align:center; }
+.stage-heading h1 { line-height:1.18; overflow-wrap:anywhere; }
+.stage-heading p { line-height:1.5; overflow-wrap:anywhere; }
+.stage-action-wrap { margin-top:24px; }
+.hmi-card { width:100%; min-width:0; height:auto; background:var(--bg-card); border:1.5px solid var(--border-card); border-radius:var(--radius-lg); box-shadow:0 10px 25px -5px rgba(0,0,0,.5),0 4px 10px -3px rgba(0,0,0,.3); overflow-wrap:anywhere; }
+.stage-screen .hmi-card { padding:24px; }
+.stage-card-wrap > .hmi-card { padding:32px; }
+.stage-card-wrap > .hmi-card > * { min-width:0; }
+.stage-card-wrap > .hmi-card > .absolute { pointer-events:none; z-index:0; }
+.stage-card-wrap > .hmi-card > :not(.absolute) { position:relative; z-index:1; }
+.stage-card-wrap h2,.stage-card-wrap p,.stage-card-wrap span { overflow-wrap:anywhere; }
+
+.hmi-action-bar { width:100%; min-height:76px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:20px; background:var(--bg-header); border:1px solid var(--border-dim); border-radius:var(--radius-md); box-shadow:0 4px 12px rgba(0,0,0,.3); }
+.hmi-action-bar > * { min-width:0; }
+.hmi-action-bar .hmi-btn { flex:0 0 auto; min-width:130px; }
+
+/* Controls */
+.hmi-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:54px; height:54px; padding:0 24px; border:1px solid transparent; border-radius:var(--radius-md); font:700 14px/1 var(--font-mono); letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; cursor:pointer; touch-action:manipulation; transition:transform .15s ease,background .15s ease,box-shadow .15s ease; }
+.hmi-btn:disabled { opacity:.35; cursor:not-allowed; box-shadow:none; transform:none; }
+.hmi-btn:focus-visible,button:focus-visible { outline:2px solid var(--color-cyan-light); outline-offset:3px; }
+.hmi-btn-primary { background:linear-gradient(180deg,#10b981,#059669); color:#fff; border-color:#34d399; box-shadow:0 3px 0 var(--color-green-dark),0 6px 14px rgba(16,185,129,.25); }
+.hmi-btn-next { background:linear-gradient(180deg,#0284c7,#0369a1); color:#fff; border-color:#38bdf8; box-shadow:0 3px 0 #075985,0 6px 14px rgba(2,132,199,.25); }
+.hmi-btn-danger { background:linear-gradient(180deg,#ef4444,#b91c1c); color:#fff; border-color:#f87171; box-shadow:0 3px 0 #991b1b,0 6px 14px rgba(239,68,68,.25); }
+.hmi-btn:not(:disabled):active { transform:translateY(2px); }
+
+.led-indicator { width:9px; height:9px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.led-green { background:var(--color-green); box-shadow:0 0 10px var(--color-green); }
+.led-amber { background:var(--color-amber); box-shadow:0 0 10px var(--color-amber); }
+.led-red { background:var(--color-red); box-shadow:0 0 10px var(--color-red); }
+.led-pulse { animation:ledPulse 1.6s infinite cubic-bezier(.4,0,.6,1); }
+@keyframes ledPulse { 50% { opacity:.45; transform:scale(.9); } }
+.animate-fade-in { animation:fadeIn .2s ease-out forwards; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width:1199px) { .hmi-header,.hmi-workflow { padding-inline:20px; } .hmi-header__machine > div:nth-child(4) { display:none; } .stage-card-wrap > .hmi-card { padding:24px; } }
+@media (max-width:1023px) { .hmi-header__machine > div:nth-child(3) { display:none; } }
+@media (max-width:767px) {
+  .hmi-shell { height:auto; overflow:visible; }
+  .hmi-main { align-items:flex-start; overflow:visible; }
+  .hmi-header { height:auto; min-height:0; padding:10px 12px; }
+  .hmi-header__inner { height:auto; flex-wrap:wrap; }
+  .hmi-header__machine { flex-wrap:wrap; }
+  .hmi-header__actions { margin-left:auto; }
+  .hmi-header__machine > div:nth-child(n+3) { display:none; }
+  .hmi-container,.stage-screen { width:calc(100% - 24px); }
+  .hmi-workflow { min-height:0; padding:8px 12px; }
+  .hmi-workflow__steps { gap:5px; }
+  .hmi-workflow__step { min-height:40px; justify-content:center; padding:5px !important; }
+  .hmi-workflow__step > div:last-child { display:none; }
+  .stage-screen { margin:0 auto; padding:24px 0; justify-content:flex-start; }
+  .stage-heading,.stage-card-wrap,.stage-action-wrap { width:100%; }
+  .stage-heading { margin-bottom:20px; }
+  .stage-card-wrap > .hmi-card { padding:20px; }
+  .hmi-action-bar { flex-direction:column; align-items:stretch; }
+  .hmi-action-bar .hmi-btn { width:100%; }
+}
